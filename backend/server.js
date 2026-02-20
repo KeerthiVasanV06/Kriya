@@ -67,17 +67,24 @@ app.use(session({
 // MongoDB Connection
 const mongooseOptions = {
     serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000
+    socketTimeoutMS: 45000,
+    family: 4 // Use IPv4 for stability on cloud providers
 };
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kriya', mongooseOptions)
-    .then(() => {
-        console.log('✓ Connected to MongoDB');
-    })
-    .catch(err => {
-        console.error('✗ MongoDB connection error:', err.message);
-        console.warn('⚠ Server will continue to run, but database features may not work');
-    });
+const connectWithRetry = () => {
+    console.log('🔄 Attempting to connect to MongoDB...');
+    mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kriya', mongooseOptions)
+        .then(() => {
+            console.log('✓ Connected to MongoDB');
+        })
+        .catch(err => {
+            console.error('✗ MongoDB connection error:', err.message);
+            console.log('🔄 Retrying in 5 seconds...');
+            setTimeout(connectWithRetry, 5000);
+        });
+};
+
+connectWithRetry();
 
 // Log MongoDB connection state
 mongoose.connection.on('connected', () => {
