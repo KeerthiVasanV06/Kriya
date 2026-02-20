@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - KRIYA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">KRIYA</a>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#products">Products</a></li>
+                    <li class="cart-nav-item"><a href="cart.html" class="cart-link active"><i
+                                class="fas fa-shopping-cart"></i> <span class="cart-count">0</span></a></li>
+                    <li id="auth-links" class="auth-links">
+                        <a href="login.html" class="btn-login"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        <a href="signup.html" class="btn-signup"><i class="fas fa-user-plus"></i> Sign Up</a>
+                    </li>
+                    <li id="user-profile" class="user-profile" style="display: none;">
+                        <div class="user-menu-trigger">
+                            <i class="fas fa-user-circle"></i> <span id="user-name">User</span>
+                        </div>
+                        <div class="user-dropdown">
+                            <a href="dashboard.html"><i class="fas fa-th-large"></i> My Dashboard</a>
+                            <a href="/admin" id="admin-menu-link" style="display: none;"><i
+                                    class="fas fa-user-shield"></i> Admin Panel</a>
+                            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cart Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Your Shopping Cart</h1>
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <section class="cart-section">
+        <div class="container">
+            <div class="cart-container">
+                <div class="cart-items" id="cart-items-container">
+                    <!-- Items will be injected here via JS -->
+                    <div class="empty-cart-message">
+                        <i class="fas fa-shopping-basket"></i>
+                        <p>Your cart is empty.</p>
+                        <a href="index.html#products" class="btn btn-primary">Start Shopping</a>
+                    </div>
+                </div>
+                <div class="cart-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal">₹0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span id="cart-total">₹0.00</span>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="proceedToCheckout()">Proceed to Checkout</button>
+                    <a href="index.html#products" class="continue-shopping">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content checkout-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header-box">
+                <h3>Checkout</h3>
+                <p class="subtitle">Complete your order details</p>
+            </div>
+
+            <div class="checkout-grid">
+                <div class="checkout-form-side">
+                    <form id="checkout-form">
+                        <div class="form-section">
+                            <h4><i class="fas fa-user"></i> Contact Information</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="checkout-name" placeholder="Enter your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="checkout-phone" placeholder="Enter 10-digit phone number"
+                                        pattern="[0-9]{10}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4><i class="fas fa-map-marker-alt"></i> Shipping Address</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Pincode</label>
+                                    <input type="text" id="checkout-pincode" placeholder="6-digit pincode"
+                                        pattern="[0-9]{6}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>State</label>
+                                    <input type="text" id="checkout-state" placeholder="State" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <input type="text" id="checkout-city" placeholder="City" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>House No. / Flat</label>
+                                    <input type="text" id="checkout-flat" placeholder="House/Flat No." required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Area / Colony / Sector</label>
+                                <input type="text" id="checkout-area" placeholder="Area details" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Landmark (Optional)</label>
+                                <input type="text" id="checkout-landmark" placeholder="e.g. Near Apollo Hospital">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4><i class="fas fa-credit-card"></i> Payment Method</h4>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment-method" value="COD" checked>
+                                    <span class="option-details">
+                                        <i class="fas fa-hand-holding-usd"></i>
+                                        <span>Cash on Delivery (COD)</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-review-btn checkout-submit-btn">
+                            <span>Place Order</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                        <div id="checkout-status"></div>
+                    </form>
+                </div>
+
+                <div class="order-summary-side">
+                    <div class="order-summary-box">
+                        <h4>Order Summary</h4>
+                        <div id="checkout-items-list" class="checkout-items-mini">
+                            <!-- Items will be listed here -->
+                        </div>
+                        <hr>
+                        <div class="summary-row total">
+                            <span>Grand Total</span>
+                            <span id="checkout-grand-total">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">KRIYA</div>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="index.html#products">Products</a>
+                    <a href="index.html#contact">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                </div>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <p class="copyright">&copy; 2026 KRIYA Hair Oil. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

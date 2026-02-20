@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRIYA - Premium Hair Oil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E8B57">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="#" class="logo">KRIYA</a>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#results">Results</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li class="cart-nav-item"><a href="cart.html" class="cart-link"><i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span></a></li>
+                    <li id="auth-links" class="auth-links">
+                        <a href="login.html" class="btn-login"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        <a href="signup.html" class="btn-signup"><i class="fas fa-user-plus"></i> Sign Up</a>
+                    </li>
+                    <li id="user-profile" class="user-profile" style="display: none;">
+                        <div class="user-menu-trigger">
+                            <i class="fas fa-user-circle"></i> <span id="user-name">User</span>
+                        </div>
+                        <div class="user-dropdown">
+                            <a href="dashboard.html"><i class="fas fa-th-large"></i> My Dashboard</a>
+                            <a href="/admin" id="admin-menu-link" style="display: none;"><i
+                                    class="fas fa-user-shield"></i> Admin Panel</a>
+                            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Unlock Your Hair's Natural Gold</h1>
+            <p>Experience the luxury of nature with our premium herbal hair oil.</p>
+            <a href="#products" class="btn btn-primary">Discover KRIYA</a>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="products">
+        <div class="container">
+            <h2 class="section-title">Our Premium Collection</h2>
+            <div class="product-grid" id="products-container">
+                <!-- Products will be loaded dynamically from database -->
+                <div class="loading-products">
+                    <div class="spinner"></div>
+                    <p>Loading our premium products...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results/Reviews Section -->
+    <section id="results" class="results reviews-section">
+        <div class="container">
+            <h2 class="section-title">Customer Reviews</h2>
+            <div class="reviews-header">
+                <div class="overall-rating" id="overall-rating">
+                    <div class="rating-number">0.0</div>
+                    <div class="rating-stars" id="overall-stars"></div>
+                    <div class="rating-count">Based on 0 reviews</div>
+                </div>
+                <button id="write-review-btn" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Write a Review
+                </button>
+            </div>
+            <div class="testimonials-grid" id="reviews-container">
+                <!-- Reviews will be loaded dynamically -->
+                <div class="loading-reviews">
+                    <div class="spinner"></div>
+                    <p>Loading reviews...</p>
+                </div>
+            </div>
+            <div id="see-more-container" class="see-more-container" style="display: none;">
+                <button id="see-more-btn" class="btn btn-secondary">See More Reviews</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Write Review Modal -->
+    <div id="review-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header-box">
+                <h3>Share Your Experience</h3>
+                <p class="subtitle">Tell us what you think about our products.</p>
+            </div>
+            <form id="review-form">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="review-name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Rating (Required)</label>
+                    <div class="star-rating-input" id="star-input">
+                        <i class="fas fa-star" data-rating="1"></i>
+                        <i class="fas fa-star" data-rating="2"></i>
+                        <i class="fas fa-star" data-rating="3"></i>
+                        <i class="fas fa-star" data-rating="4"></i>
+                        <i class="fas fa-star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="selected-rating" required>
+                </div>
+                <div class="form-group">
+                    <label>Your Review (Optional)</label>
+                    <textarea id="review-text" placeholder="Tell us what you think..." rows="4"></textarea>
+                </div>
+                <button type="submit" class="submit-review-btn">
+                    <span>Submit Review</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <div id="review-status"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content checkout-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header-box">
+                <h3>Checkout</h3>
+                <p class="subtitle">Complete your order details</p>
+            </div>
+
+            <div class="checkout-grid">
+                <div class="checkout-form-side">
+                    <form id="checkout-form">
+                        <div class="form-section">
+                            <h4><i class="fas fa-user"></i> Contact Information</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="checkout-name" placeholder="Enter your full name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="checkout-phone" placeholder="Enter 10-digit phone number"
+                                        pattern="[0-9]{10}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4><i class="fas fa-map-marker-alt"></i> Shipping Address</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Pincode</label>
+                                    <input type="text" id="checkout-pincode" placeholder="6-digit pincode"
+                                        pattern="[0-9]{6}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>State</label>
+                                    <input type="text" id="checkout-state" placeholder="State" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <input type="text" id="checkout-city" placeholder="City" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>House No. / Flat</label>
+                                    <input type="text" id="checkout-flat" placeholder="House/Flat No." required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Area / Colony / Sector</label>
+                                <input type="text" id="checkout-area" placeholder="Area details" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Landmark (Optional)</label>
+                                <input type="text" id="checkout-landmark" placeholder="e.g. Near Apollo Hospital">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h4><i class="fas fa-credit-card"></i> Payment Method</h4>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment-method" value="COD" checked>
+                                    <span class="option-details">
+                                        <i class="fas fa-hand-holding-usd"></i>
+                                        <span>Cash on Delivery (COD)</span>
+                                    </span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment-method" value="UPI">
+                                    <span class="option-details">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        <span>UPI / Online Payment</span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- UPI Payment Details (Hidden by default) -->
+                            <div id="upi-details" class="upi-details-box" style="display: none;">
+                                <div class="upi-mobile-only">
+                                    <a id="upi-pay-link" href="#" class="btn btn-primary buy-now-btn pay-via-app-btn">
+                                        <i class="fas fa-external-link-alt"></i> Pay via UPI App
+                                    </a>
+                                    <p class="small-text">Opens GPay, PhonePe, Paytm, etc.</p>
+                                    <div class="divider-text">OR</div>
+                                </div>
+                                <div class="qr-container">
+                                    <img id="upi-qr" src="" alt="UPI QR Code">
+                                    <p class="qr-instruction">Scan to pay with any UPI App</p>
+                                </div>
+                                <div class="upi-info">
+                                    <p><strong>Merchant:</strong> Kriya&CO</p>
+                                    <p><strong>UPI ID:</strong> 7904776199@ptyes</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Transaction ID / UTR Number</label>
+                                    <input type="text" id="checkout-transaction-id"
+                                        placeholder="Enter 12-digit UPI Ref No.">
+                                    <small>Submit order after payment</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-review-btn checkout-submit-btn">
+                            <span>Place Order</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                        <div id="checkout-status"></div>
+                    </form>
+                </div>
+
+                <div class="order-summary-side">
+                    <div class="order-summary-box">
+                        <h4>Order Summary</h4>
+                        <div id="checkout-items-list" class="checkout-items-mini">
+                            <!-- Items will be listed here -->
+                        </div>
+                        <hr>
+                        <div class="summary-row total">
+                            <span>Grand Total</span>
+                            <span id="checkout-grand-total">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get in Touch</h2>
+            <div class="contact-wrapper">
+                <div class="contact-info">
+                    <h3>Contact Us</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> 183/8, Velan Nagar, Vellalapalayam, Vembathi, Anthiyur,
+                        Erode - 638315</p>
+                    <p><i class="fas fa-phone"></i> +91 7502202787</p>
+                    <p><i class="fas fa-envelope"></i> Support@kriya.com</p>
+                </div>
+                <form class="contact-form" id="contact-form">
+                    <input type="text" id="contact-name" placeholder="Your Name" required>
+                    <input type="email" id="contact-email" placeholder="Your Email" required>
+                    <textarea id="contact-message" placeholder="Your Message" rows="5" required></textarea>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <div id="contact-status" class="contact-status"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">KRIYA</div>
+                <div class="footer-links">
+                    <a href="#home">Home</a>
+                    <a href="#products">Products</a>
+                    <a href="#contact">Contact</a>
+                    <a href="#">Privacy Policy</a>
+                </div>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <p class="copyright">&copy; 2026 KRIYA Hair Oil. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

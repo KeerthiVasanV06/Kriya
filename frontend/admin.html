@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - KRIYA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="brand-badge">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h1>KRIYA Admin</h1>
+                <p>Authentication Required</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-control-group">
+                    <div class="input-icon-wrapper" style="margin-bottom: 1rem;">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="admin-email" placeholder="Admin Email" required>
+                    </div>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="admin-password" placeholder="Admin Password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary login-btn">
+                    <span>Unlock Dashboard</span>
+                    <i class="fas fa-sign-in-alt"></i>
+                </button>
+                <div id="login-error" class="error-message"></div>
+                <div class="login-footer">
+                    <a href="/" class="return-link">
+                        <i class="fas fa-arrow-left"></i> Return to Website
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="admin-dashboard" style="display: none;">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-spa"></i>
+                    <span>KRIYA Admin</span>
+                </div>
+                <nav class="admin-nav">
+                    <button class="nav-btn active" data-section="products">
+                        <i class="fas fa-box"></i> Products
+                    </button>
+                    <button class="nav-btn" data-section="messages">
+                        <i class="fas fa-envelope"></i> Messages
+                        <span class="notification-badge" id="unread-count">0</span>
+                    </button>
+                    <button class="nav-btn" data-section="orders">
+                        <i class="fas fa-shopping-bag"></i> Orders
+                    </button>
+                </nav>
+                <div class="admin-actions">
+                    <a href="/" class="btn-icon" title="Visit Website">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button id="logout-btn" class="btn-icon" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Products Section -->
+            <section id="products-section" class="admin-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-box"></i> Product Management</h2>
+                    <button id="add-product-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Product
+                    </button>
+                </div>
+
+                <!-- Product Form (Hidden by default) -->
+                <div id="product-form-container" class="form-container" style="display: none;">
+                    <form id="product-form" class="admin-form">
+                        <h3><i class="fas fa-plus-circle"></i> Add New Product</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Product Title</label>
+                                <input type="text" id="product-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="product-price" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="product-description" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Product Picture</label>
+                            <div class="image-upload-container">
+                                <input type="file" id="product-image" accept="image/*" class="file-input">
+                                <label for="product-image" class="file-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Click to upload or drag & drop</span>
+                                    <small>PNG, JPG, GIF up to 5MB</small>
+                                </label>
+                                <div id="image-preview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Image Style (CSS Gradient - Optional Fallback)</label>
+                            <select id="product-image-style">
+                                <option value="background: linear-gradient(135deg, #d4af37, #8b5a2b);">Gold Shimmer
+                                </option>
+                                <option value="background: linear-gradient(135deg, #2e8b57, #556b2f);">Forest Green
+                                </option>
+                                <option value="background: linear-gradient(135deg, #8b4513, #cd853f);">Warm Brown
+                                </option>
+                                <option value="background: linear-gradient(135deg, #ff6b6b, #feca57);">Sunset</option>
+                                <option value="background: linear-gradient(135deg, #4facfe, #00f2fe);">Ocean Blue
+                                </option>
+                            </select>
+                            <div class="gradient-preview" id="gradient-preview"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Product
+                            </button>
+                            <button type="button" id="cancel-product-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Edit Product Form (Hidden by default) -->
+                <div id="edit-product-form-container" class="form-container" style="display: none;">
+                    <form id="edit-product-form" class="admin-form">
+                        <h3><i class="fas fa-edit"></i> Edit Product</h3>
+                        <input type="hidden" id="edit-product-id">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Product Title</label>
+                                <input type="text" id="edit-product-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="edit-product-price" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="edit-product-description" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Product Picture</label>
+                            <div id="edit-current-image" class="current-image-container" style="display: none;">
+                                <p class="current-image-label">Current Image:</p>
+                                <img id="edit-current-image-preview" alt="Current product image">
+                            </div>
+                            <div class="image-upload-container">
+                                <input type="file" id="edit-product-image" accept="image/*" class="file-input">
+                                <label for="edit-product-image" class="file-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Click to upload or drag & drop</span>
+                                    <small>PNG, JPG, GIF up to 5MB (Optional)</small>
+                                </label>
+                                <div id="edit-image-preview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Image Style (CSS Gradient - Optional Fallback)</label>
+                            <select id="edit-product-image-style">
+                                <option value="background: linear-gradient(135deg, #d4af37, #8b5a2b);">Gold Shimmer
+                                </option>
+                                <option value="background: linear-gradient(135deg, #2e8b57, #556b2f);">Forest Green
+                                </option>
+                                <option value="background: linear-gradient(135deg, #8b4513, #cd853f);">Warm Brown
+                                </option>
+                                <option value="background: linear-gradient(135deg, #ff6b6b, #feca57);">Sunset</option>
+                                <option value="background: linear-gradient(135deg, #4facfe, #00f2fe);">Ocean Blue
+                                </option>
+                            </select>
+                            <div class="gradient-preview" id="edit-gradient-preview"></div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Update Product
+                            </button>
+                            <button type="button" id="cancel-edit-product-btn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Products List -->
+                <div id="products-list" class="products-grid"></div>
+            </section>
+
+            <!-- Messages Section -->
+            <section id="messages-section" class="admin-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-envelope"></i> Contact Messages</h2>
+                </div>
+                <div id="messages-list" class="messages-container"></div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders-section" class="admin-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-shopping-bag"></i> Customer Orders</h2>
+                    <button class="btn btn-primary" onclick="loadOrders()">
+                        <i class="fas fa-sync-alt"></i> Refresh Orders
+                    </button>
+                </div>
+                <div id="orders-list" class="orders-container">
+                    <!-- Orders will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

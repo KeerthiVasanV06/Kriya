@@ -1,0 +1,16 @@
+{
+    "name": "KRIYA - Premium Hair Oil",
+    "short_name": "KRIYA",
+    "description": "Experience the luxury of nature with KRIYA premium hair and face care.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#FAFAFA",
+    "theme_color": "#2E8B57",
+    "icons": [
+        {
+            "src": "favicon.ico",
+            "sizes": "64x64 32x32 24x24 16x16",
+            "type": "image/x-icon"
+        }
+    ]
+}
