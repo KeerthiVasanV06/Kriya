@@ -779,11 +779,14 @@ const getNetworkIP = () => {
 
 app.listen(PORT, '0.0.0.0', () => {
     const networkIP = getNetworkIP();
+    const isRender = process.env.RENDER === 'true';
+    const displayURL = isRender ? 'https://kriya-kwer.onrender.com' : `http://${networkIP}:${PORT}`;
+
     console.log('\n🚀 KRIYA Server Setup Complete!');
     console.log('-------------------------------------------');
     console.log(`🏠 Local:   http://localhost:${PORT}`);
-    console.log(`🌐 Network: http://${networkIP}:${PORT}`);
+    console.log(`🌐 ${isRender ? 'Live' : 'Network'}: ${displayURL}`);
     console.log('-------------------------------------------');
-    console.log('📱 Scan with your mobile on the same Wi-Fi\n');
+    console.log(`📱 ${isRender ? 'Open on any phone' : 'Scan with your mobile on the same Wi-Fi'}\n`);
     bootstrapAdmin();
 });

@@ -1,5 +1,7 @@
 # KRIYA - Premium Hair Oil E-Commerce Website
 
+**🚀 Live Website**: [https://kriya-kwer.onrender.com](https://kriya-kwer.onrender.com)
+
 ## 🌿 Overview
 A beautiful, nature-themed e-commerce website with secure admin panel for managing products and customer messages.
 
