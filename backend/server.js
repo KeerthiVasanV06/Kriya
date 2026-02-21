@@ -143,6 +143,7 @@ const orderSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     customerName: { type: String, required: true },
     phone: { type: String, required: true },
+    email: { type: String, required: true },
     address: {
         pincode: { type: String, required: true },
         state: { type: String, required: true },
@@ -214,6 +215,7 @@ async function sendOrderEmail(order) {
                 <hr style="border: 0.5px solid #eee;">
                 <p><strong>Customer Name:</strong> ${order.customerName}</p>
                 <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Email:</strong> ${order.email}</p>
                 <p><strong>Address:</strong><br>
                 ${order.address.flat}, ${order.address.area}<br>
                 ${order.address.city}, ${order.address.state} - ${order.address.pincode}<br>
@@ -253,7 +255,7 @@ async function sendTelegramAlert(order) {
     }
 
     const itemsText = order.items.map(item => `• ${item.title} (x${item.quantity})`).join('%0A');
-    const message = `🚨 *New Order Received!*%0A-------------------------%0A👤 *Customer:* ${order.customerName}%0A📞 *Phone:* ${order.phone}%0A💰 *Amount:* ₹${order.totalAmount.toFixed(0)}%0A💳 *Payment:* ${order.paymentMethod}%0A%0A📍 *Address:*%0A${order.address.flat}, ${order.address.area}%0A${order.address.city}, ${order.address.state}%0A%0A🛒 *Items:*%0A${itemsText}`;
+    const message = `🚨 *New Order Received!*%0A-------------------------%0A👤 *Customer:* ${order.customerName}%0A📞 *Phone:* ${order.phone}%0A📧 *Email:* ${order.email}%0A💰 *Amount:* ₹${order.totalAmount.toFixed(0)}%0A💳 *Payment:* ${order.paymentMethod}%0A%0A📍 *Address:*%0A${order.address.flat}, ${order.address.area}%0A${order.address.city}, ${order.address.state}%0A%0A🛒 *Items:*%0A${itemsText}`;
 
     try {
         // Using a dynamic import for fetch to support various Node versions or simple https request
@@ -692,7 +694,7 @@ app.delete('/api/admin/messages/:id', requireAdmin, async (req, res) => {
 // Orders API
 app.post('/api/orders', requireAuth, async (req, res) => {
     try {
-        const { customerName, phone, address, items, totalAmount, paymentMethod, transactionId } = req.body;
+        const { customerName, phone, email, address, items, totalAmount, paymentMethod, transactionId } = req.body;
 
         if (!customerName || !phone || !address || !items || items.length === 0) {
             return res.status(400).json({ success: false, message: 'All fields are required' });
@@ -702,6 +704,7 @@ app.post('/api/orders', requireAuth, async (req, res) => {
             userId: req.session.userId || null,
             customerName,
             phone,
+            email,
             address,
             items,
             totalAmount,

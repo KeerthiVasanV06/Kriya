@@ -789,9 +789,20 @@ function openCheckout(items) {
         nameInput.value = currentUser.name;
     }
 
-    // Pre-fill phone and address if available
+    // Pre-fill phone, email and address if available
     const phoneInput = document.getElementById('checkout-phone');
-    if (phoneInput && currentUser.phone) phoneInput.value = currentUser.phone;
+    if (phoneInput && currentUser.phone) {
+        phoneInput.value = currentUser.phone;
+        // Trigger validation UI
+        phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const emailInput = document.getElementById('checkout-email');
+    if (emailInput && currentUser.email) {
+        emailInput.value = currentUser.email;
+        // Trigger validation UI
+        emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 
     if (currentUser.address) {
         const addr = currentUser.address;
@@ -898,7 +909,59 @@ function buyNow(product) {
     });
 }
 
-// "Proceed to Checkout" from Cart
+// Real-time validation for Checkout
+document.addEventListener('input', (e) => {
+    if (e.target.id === 'checkout-phone') {
+        const phone = e.target.value;
+        const tick = document.getElementById('phone-tick');
+        const group = e.target.closest('.validation-group');
+
+        // India phone validation: 10 digits, starts with 6-9
+        const isValid = /^[6-9]\d{9}$/.test(phone);
+
+        if (isValid) {
+            tick.classList.add('visible');
+            if (group) {
+                group.classList.add('valid');
+                group.classList.remove('invalid');
+            }
+        } else {
+            tick.classList.remove('visible');
+            if (group && phone.length >= 10) {
+                group.classList.add('invalid');
+                group.classList.remove('valid');
+            } else if (group) {
+                group.classList.remove('valid', 'invalid');
+            }
+        }
+    }
+
+    if (e.target.id === 'checkout-email') {
+        const email = e.target.value;
+        const tick = document.getElementById('email-tick');
+        const group = e.target.closest('.validation-group');
+
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        if (isValid) {
+            tick.classList.add('visible');
+            if (group) {
+                group.classList.add('valid');
+                group.classList.remove('invalid');
+            }
+        } else {
+            tick.classList.remove('visible');
+            if (group && email.length > 5 && email.includes('@')) {
+                group.classList.add('invalid');
+                group.classList.remove('valid');
+            } else if (group) {
+                group.classList.remove('valid', 'invalid');
+            }
+        }
+    }
+});
+
+// Proceed to Checkout from Cart
 function proceedToCheckout() {
     if (!requireLogin()) return;
     if (cart.length === 0) {
@@ -919,6 +982,7 @@ if (checkoutForm) {
         const formData = {
             customerName: document.getElementById('checkout-name').value,
             phone: document.getElementById('checkout-phone').value,
+            email: document.getElementById('checkout-email') ? document.getElementById('checkout-email').value : '',
             address: {
                 pincode: document.getElementById('checkout-pincode').value,
                 state: document.getElementById('checkout-state').value,
