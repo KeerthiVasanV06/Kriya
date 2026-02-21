@@ -12,21 +12,20 @@ const PORT = process.env.PORT || 3000;
 
 // Image storage logic updated to Base64 for hosting stability
 
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-
-const fileFilter = (req, file, cb) => {
-    // Accept only image files
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Invalid file type. Only image files are allowed.'));
+// Configure multer for file uploads to disk
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../frontend/uploads');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
     }
-};
+});
 
 const upload = multer({
     storage: storage,
@@ -486,9 +485,8 @@ app.post('/api/admin/products', requireAdmin, handlePostUpload, async (req, res)
         // Prepare image if file was uploaded
         let imagePath = null;
         if (req.file) {
-            // Convert buffer to Base64 string
-            const base64Image = req.file.buffer.toString('base64');
-            imagePath = `data:${req.file.mimetype};base64,${base64Image}`;
+            // Save the relative path for the frontend
+            imagePath = `/uploads/${req.file.filename}`;
         }
 
         const product = new Product({
@@ -570,9 +568,18 @@ app.patch('/api/admin/products/:id', requireAdmin, handlePatchUpload, async (req
         let imagePath = product.image; // Keep existing image by default
 
         if (req.file) {
-            // Convert new image to Base64
-            const base64Image = req.file.buffer.toString('base64');
-            imagePath = `data:${req.file.mimetype};base64,${base64Image}`;
+            // Save new relative path
+            imagePath = `/uploads/${req.file.filename}`;
+
+            // Optional: Delete old image file if it exists and is local
+            if (product.image && product.image.startsWith('/uploads/')) {
+                const oldPath = path.join(__dirname, '../frontend', product.image);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlink(oldPath, (err) => {
+                        if (err) console.error('Error deleting old file:', err);
+                    });
+                }
+            }
         }
 
         // Update product
