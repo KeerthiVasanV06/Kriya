@@ -627,52 +627,105 @@ function displayOrders(orders) {
     if (!container) return;
 
     if (orders.length === 0) {
-        container.innerHTML = '<p class="empty-msg">No orders received yet.</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-shopping-basket"></i>
+                <p>No orders received yet. High time for some marketing!</p>
+            </div>
+        `;
         return;
     }
 
     container.innerHTML = orders.map(order => `
-        <div class="message-card order-card ${order.status.toLowerCase()}">
-            <div class="message-header">
-                <div>
-                    <h3>${order.customerName}</h3>
-                    <p class="time"><i class="far fa-clock"></i> ${new Date(order.createdAt).toLocaleString()}</p>
-                </div>
-                <div class="order-total-badge">₹${order.totalAmount.toFixed(2)}</div>
-            </div>
-            <div class="message-body">
-                <div class="order-details-grid">
-                    <div class="detail-group">
-                        <p><strong><i class="fas fa-phone"></i> Phone:</strong> <a href="tel:${order.phone}">${order.phone}</a></p>
-                        <p><strong><i class="fas fa-credit-card"></i> Payment:</strong> ${order.paymentMethod}</p>
-                        ${order.transactionId ? `<p><strong><i class="fas fa-hashtag"></i> Txn ID:</strong> <span class="txn-id">${order.transactionId}</span></p>` : ''}
-                        <p><strong><i class="fas fa-info-circle"></i> Status:</strong> <span class="status-badge ${order.status.toLowerCase()}">${order.status}</span></p>
-                    </div>
-                    <div class="detail-group">
-                        <p><strong><i class="fas fa-map-marker-alt"></i> Address:</strong></p>
-                        <p class="address-text">${order.address.flat}, ${order.address.area}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
-                        ${order.address.landmark ? `<p class="landmark-text"><strong>Landmark:</strong> ${order.address.landmark}</p>` : ''}
-                    </div>
-                </div>
-                <div class="order-items-list">
-                    <h4>Items:</h4>
-                    ${order.items.map(item => `
-                        <div class="order-item-row">
-                            <span>${item.title} x ${item.quantity}</span>
-                            <span>₹${(item.price * item.quantity).toFixed(2)}</span>
+        <div class="order-card-modern ${order.status.toLowerCase()}">
+            <div class="order-card-header">
+                <div class="order-info-primary">
+                    <div class="order-customer-details">
+                        <div class="customer-avatar">
+                            ${order.customerName.charAt(0).toUpperCase()}
                         </div>
-                    `).join('')}
+                        <div class="customer-meta">
+                            <h3>${order.customerName}</h3>
+                            <p class="order-id">ID: #${order._id.slice(-6).toUpperCase()}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-status-group">
+                    <span class="status-pill ${order.status.toLowerCase()}">${order.status}</span>
+                    <div class="order-date-badge">
+                        <i class="far fa-calendar-alt"></i>
+                        ${formatDate(order.createdAt)}
+                    </div>
                 </div>
             </div>
-            <div class="message-actions">
-                ${order.status === 'Pending' ? `
-                    <button class="btn btn-success btn-sm" onclick="updateOrderStatus('${order._id}', 'Completed')">
-                        <i class="fas fa-check-double"></i> Mark Completed
+
+            <div class="order-card-body">
+                <div class="order-grid-details">
+                    <div class="order-contact-info">
+                        <h4><i class="fas fa-address-book"></i> Contact Details</h4>
+                        <div class="info-row">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:${order.phone}">${order.phone}</a>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:${order.email}">${order.email}</a>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-wallet"></i>
+                            <span>${order.paymentMethod}</span>
+                        </div>
+                        ${order.transactionId ? `
+                        <div class="info-row txn">
+                            <i class="fas fa-barcode"></i>
+                            <span>Txn: <span class="txn-code">${order.transactionId}</span></span>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="order-shipping-info">
+                        <h4><i class="fas fa-shipping-fast"></i> Shipping Address</h4>
+                        <p class="address-text">
+                            ${order.address.flat}, ${order.address.area}<br>
+                            ${order.address.city}, ${order.address.state} - <strong>${order.address.pincode}</strong>
+                        </p>
+                        ${order.address.landmark ? `<p class="landmark-msg"><span>Landmark:</span> ${order.address.landmark}</p>` : ''}
+                    </div>
+
+                    <div class="order-items-summary">
+                        <h4><i class="fas fa-shopping-cart"></i> Order Items</h4>
+                        <div class="items-mini-table">
+                            ${order.items.map(item => `
+                                <div class="mini-item-row">
+                                    <span class="item-name">${item.title} <small>x${item.quantity}</small></span>
+                                    <span class="item-price">₹${(item.price * item.quantity).toFixed(0)}</span>
+                                </div>
+                            `).join('')}
+                            <div class="order-grand-total">
+                                <span>Total Amount</span>
+                                <span>₹${order.totalAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-card-actions">
+                <div class="action-left">
+                    ${order.status === 'Pending' ? `
+                        <button class="btn btn-success btn-sm" onclick="updateOrderStatus('${order._id}', 'Completed')">
+                            <i class="fas fa-check-circle"></i> Mark as Shipped/Completed
+                        </button>
+                    ` : `
+                        <button class="btn btn-secondary btn-sm" onclick="updateOrderStatus('${order._id}', 'Pending')">
+                            <i class="fas fa-undo"></i> Revert to Pending
+                        </button>
+                    `}
+                </div>
+                <div class="action-right">
+                    <button class="btn-delete-order" onclick="deleteOrder('${order._id}')" title="Delete Permanent">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
-                ` : ''}
-                <button class="btn-icon delete" title="Delete Order" onclick="deleteOrder('${order._id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
+                </div>
             </div>
         </div>
     `).join('');
