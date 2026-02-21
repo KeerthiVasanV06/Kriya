@@ -199,25 +199,28 @@ function saveCart() {
     updateCartCount();
 }
 
-// Add to Cart Function
+// Add to Cart Function (Toggle: add on first click, remove on second)
 function addToCart(product) {
     if (!requireLogin()) return;
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ ...product, quantity: 1 });
-    }
-    saveCart();
-
-    // Visual Feedback
+    const existingIndex = cart.findIndex(item => item.id === product.id);
     const btn = document.querySelector(`button[data-id="${product.id}"]`);
-    if (btn) {
-        btn.innerHTML = '<i class="fas fa-check"></i> Added';
-        btn.classList.add('added');
 
-        // Show "Added" briefly then keep it as "In Cart" or similar?
-        // Let's just keep it as "Added" with the checkmark as requested
+    if (existingIndex !== -1) {
+        // Already in cart → remove it
+        cart.splice(existingIndex, 1);
+        saveCart();
+        if (btn) {
+            btn.innerHTML = 'Add to Cart';
+            btn.classList.remove('added');
+        }
+    } else {
+        // Not in cart → add it
+        cart.push({ ...product, quantity: 1 });
+        saveCart();
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-check"></i> Added';
+            btn.classList.add('added');
+        }
     }
 }
 
