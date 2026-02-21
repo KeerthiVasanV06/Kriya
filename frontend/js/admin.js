@@ -205,6 +205,8 @@ productForm.addEventListener('submit', async (e) => {
     formData.append('price', parseFloat(document.getElementById('product-price').value));
     formData.append('imageStyle', document.getElementById('product-image-style').value);
 
+    formData.append('isPremium', document.getElementById('product-premium').checked);
+
     // Add image file if selected
     if (productImageInput.files.length > 0) {
         formData.append('image', productImageInput.files[0]);
@@ -270,6 +272,7 @@ function displayProducts(products) {
                 <h3 class="product-item-title">${product.title}</h3>
                 <p class="product-item-description">${product.description}</p>
                 <div class="product-item-price">₹${product.price.toFixed(2)}</div>
+                ${product.isPremium ? '<div class="premium-badge"><i class="fas fa-star"></i> Premium Item</div>' : ''}
                 <div class="product-item-actions">
                     <button class="btn btn-primary btn-sm" onclick="editProduct('${product._id}')">
                         <i class="fas fa-edit"></i> Edit
@@ -329,6 +332,7 @@ async function editProduct(id) {
                 document.getElementById('edit-product-price').value = product.price;
                 document.getElementById('edit-product-description').value = product.description;
                 document.getElementById('edit-product-image-style').value = product.imageStyle;
+                document.getElementById('edit-product-premium').checked = product.isPremium || false;
 
                 // Show current image if exists
                 if (product.image) {
@@ -467,6 +471,8 @@ editProductForm.addEventListener('submit', async (e) => {
     if (editProductImageInput.files.length > 0) {
         formData.append('image', editProductImageInput.files[0]);
     }
+
+    formData.append('isPremium', document.getElementById('edit-product-premium').checked);
 
     try {
         const response = await fetch(`/api/admin/products/${productId}`, {

@@ -6,26 +6,14 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../frontend/uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Image storage logic updated to Base64 for hosting stability
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-        // Generate unique filename
-        const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     // Accept only image files
@@ -50,8 +38,6 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../frontend')));
-// Serve uploaded images
-app.use('/uploads', express.static(uploadsDir));
 
 // Session Configuration
 app.use(session({
@@ -106,6 +92,7 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     image: { type: String, default: null }, // Path to uploaded image
     imageStyle: { type: String, default: 'background: linear-gradient(135deg, #d4af37, #8b5a2b);' }, // Fallback gradient
+    isPremium: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -194,6 +181,94 @@ function requireAuth(req, res, next) {
         return next();
     }
     res.status(401).json({ success: false, message: 'Please log in to continue' });
+}
+
+// ============= EMAIL CONFIGURATION =============
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+async function sendOrderEmail(order) {
+    const adminEmail = process.env.ADMIN_EMAIL || 'radhamaniv1988@gmail.com';
+
+    // Check if email credentials are set
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.log('✉️ Email notification skipped: EMAIL_USER or EMAIL_PASS not set in .env');
+        return;
+    }
+
+    const itemsHtml = order.items.map(item =>
+        `<li>${item.title} x ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}</li>`
+    ).join('');
+
+    const mailOptions = {
+        from: `"KRIYA Orders" <${process.env.EMAIL_USER}>`,
+        to: adminEmail,
+        subject: `🚨 New Order Received - ₹${order.totalAmount.toFixed(2)}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #d4af37; padding: 20px; border-radius: 10px;">
+                <h2 style="color: #2e8b57; text-align: center;">New Order Placed!</h2>
+                <hr style="border: 0.5px solid #eee;">
+                <p><strong>Customer Name:</strong> ${order.customerName}</p>
+                <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Address:</strong><br>
+                ${order.address.flat}, ${order.address.area}<br>
+                ${order.address.city}, ${order.address.state} - ${order.address.pincode}<br>
+                ${order.address.landmark ? `Landmark: ${order.address.landmark}` : ''}</p>
+                <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+                
+                <h3 style="color: #8b4513;">Order Items:</h3>
+                <ul>${itemsHtml}</ul>
+                
+                <div style="background: #fdfbf7; padding: 10px; text-align: right; font-size: 1.2rem; font-weight: bold; color: #2e8b57;">
+                    Total Amount: ₹${order.totalAmount.toFixed(2)}
+                </div>
+                
+                <p style="font-size: 0.8rem; color: #666; margin-top: 20px;">
+                    This is an automated notification from your KRIYA website.
+                </p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('✅ Order notification email sent to admin');
+    } catch (error) {
+        console.error('❌ Error sending order email:', error);
+    }
+}
+
+// ============= TELEGRAM NOTIFICATION (FREE MOBILE ALERT) =============
+async function sendTelegramAlert(order) {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (!token || !chatId) {
+        console.log('📱 Telegram notification skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set');
+        return;
+    }
+
+    const itemsText = order.items.map(item => `• ${item.title} (x${item.quantity})`).join('%0A');
+    const message = `🚨 *New Order Received!*%0A-------------------------%0A👤 *Customer:* ${order.customerName}%0A📞 *Phone:* ${order.phone}%0A💰 *Amount:* ₹${order.totalAmount.toFixed(0)}%0A💳 *Payment:* ${order.paymentMethod}%0A%0A📍 *Address:*%0A${order.address.flat}, ${order.address.area}%0A${order.address.city}, ${order.address.state}%0A%0A🛒 *Items:*%0A${itemsText}`;
+
+    try {
+        // Using a dynamic import for fetch to support various Node versions or simple https request
+        const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown`;
+
+        const https = require('https');
+        https.get(url, (res) => {
+            console.log('✅ Telegram mobile alert sent');
+        }).on('error', (e) => {
+            console.error('❌ Telegram error:', e);
+        });
+    } catch (error) {
+        console.error('❌ Error sending Telegram alert:', error);
+    }
 }
 
 // ============= ROUTES =============
@@ -395,7 +470,7 @@ const handlePostUpload = (req, res, next) => {
 // Add Product (Admin Only)
 app.post('/api/admin/products', requireAdmin, handlePostUpload, async (req, res) => {
     try {
-        const { title, description, price, imageStyle } = req.body;
+        const { title, description, price, imageStyle, isPremium } = req.body;
 
         // Validate required fields
         if (!title || !description || !price) {
@@ -408,11 +483,12 @@ app.post('/api/admin/products', requireAdmin, handlePostUpload, async (req, res)
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
-        // Prepare image path if file was uploaded
+        // Prepare image if file was uploaded
         let imagePath = null;
         if (req.file) {
-            // Store relative path for serving through /uploads
-            imagePath = '/uploads/' + req.file.filename;
+            // Convert buffer to Base64 string
+            const base64Image = req.file.buffer.toString('base64');
+            imagePath = `data:${req.file.mimetype};base64,${base64Image}`;
         }
 
         const product = new Product({
@@ -420,18 +496,13 @@ app.post('/api/admin/products', requireAdmin, handlePostUpload, async (req, res)
             description,
             price: parseFloat(price),
             image: imagePath,
-            imageStyle
+            imageStyle,
+            isPremium: isPremium === 'true' || isPremium === true
         });
 
         await product.save();
         res.json({ success: true, product });
     } catch (error) {
-        // Delete uploaded file if saving fails
-        if (req.file) {
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error('Error deleting file:', err);
-            });
-        }
         console.error('Error adding product:', error);
         res.status(500).json({ success: false, message: 'Error adding product' });
     }
@@ -441,14 +512,6 @@ app.post('/api/admin/products', requireAdmin, handlePostUpload, async (req, res)
 app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-
-        // Delete associated image file if it exists
-        if (product && product.image) {
-            const imagePath = path.join(__dirname, '../frontend', product.image);
-            fs.unlink(imagePath, (err) => {
-                if (err) console.error('Error deleting image file:', err);
-            });
-        }
 
         await Product.findByIdAndDelete(req.params.id);
         res.json({ success: true, message: 'Product deleted' });
@@ -478,7 +541,7 @@ app.patch('/api/admin/products/:id', requireAdmin, handlePatchUpload, async (req
         console.log('Request body:', req.body);
         console.log('File:', req.file);
 
-        const { title, description, price, imageStyle } = req.body;
+        const { title, description, price, imageStyle, isPremium } = req.body;
 
         // Validate required fields
         if (!title || !description || !price) {
@@ -507,15 +570,9 @@ app.patch('/api/admin/products/:id', requireAdmin, handlePatchUpload, async (req
         let imagePath = product.image; // Keep existing image by default
 
         if (req.file) {
-            // Delete old image if it exists and a new one is being uploaded
-            if (product.image) {
-                const oldImagePath = path.join(__dirname, '../frontend', product.image);
-                fs.unlink(oldImagePath, (err) => {
-                    if (err) console.error('Error deleting old image file:', err);
-                });
-            }
-            // Use new image path
-            imagePath = '/uploads/' + req.file.filename;
+            // Convert new image to Base64
+            const base64Image = req.file.buffer.toString('base64');
+            imagePath = `data:${req.file.mimetype};base64,${base64Image}`;
         }
 
         // Update product
@@ -526,7 +583,8 @@ app.patch('/api/admin/products/:id', requireAdmin, handlePatchUpload, async (req
                 description,
                 price: parseFloat(price),
                 image: imagePath,
-                imageStyle
+                imageStyle,
+                isPremium: isPremium === 'true' || isPremium === true
             },
             { new: true }
         );
@@ -645,6 +703,10 @@ app.post('/api/orders', requireAuth, async (req, res) => {
         });
 
         await newOrder.save();
+
+        // Send notifications to admin (non-blocking)
+        sendOrderEmail(newOrder);
+        sendTelegramAlert(newOrder);
 
         // If logged in user, save address for future use if they don't have one
         if (req.session.userId) {

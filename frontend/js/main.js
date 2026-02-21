@@ -339,7 +339,8 @@ function displayProducts(products) {
         const imageStyle = product.image ? `background-image: url('${product.image}'); background-size: cover; background-position: center;` : product.imageStyle;
 
         return `
-        <div class="product-card" style="animation-delay: ${index * 0.1}s">
+        <div class="product-card ${product.isPremium ? 'is-premium' : ''}" style="animation-delay: ${index * 0.1}s">
+            ${product.isPremium ? '<div class="best-seller-badge"><i class="fas fa-crown"></i> Best Seller</div>' : ''}
             <div class="product-image">
                 <div class="placeholder-image" style="${imageStyle}"></div>
             </div>

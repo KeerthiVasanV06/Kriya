@@ -3,7 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuItems = document.querySelectorAll('.menu-item');
     const sections = document.querySelectorAll('.content-section');
 
-    menuItems.forEach(item => {
+    menuItems.forEach((item, index) => {
+        // Add staggered animation delay
+        item.style.animationDelay = `${index * 0.1}s`;
+
         item.addEventListener('click', () => {
             const target = item.dataset.target;
 
@@ -11,11 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
             menuItems.forEach(mi => mi.classList.remove('active'));
             item.classList.add('active');
 
-            // Update sections
-            sections.forEach(sec => sec.classList.remove('active'));
-            document.getElementById(target).classList.add('active');
+            // Update sections with animation
+            sections.forEach(sec => {
+                sec.classList.remove('active');
+            });
+
+            const targetSec = document.getElementById(target);
+            targetSec.classList.add('active');
+
+            // Re-trigger animations if needed
+            if (target === 'orders-section') loadUserOrders();
+            if (target === 'cart-section') loadCartPreview();
         });
     });
+
+    // Logout logic for sidebar
+    const sidebarLogout = document.getElementById('sidebar-logout');
+    if (sidebarLogout) {
+        sidebarLogout.addEventListener('click', () => {
+            if (typeof logoutUser === 'function') {
+                logoutUser();
+            } else {
+                localStorage.removeItem('kriya_user');
+                localStorage.removeItem('kriya_token');
+                window.location.href = 'index.html';
+            }
+        });
+    }
 
     // Initialize data
     initDashboard();
@@ -29,7 +54,11 @@ async function initDashboard() {
 
         if (data.authenticated) {
             const user = data.user;
-            document.getElementById('welcome-name').textContent = user.name;
+            document.getElementById('welcome-name').textContent = user.name.split(' ')[0];
+
+            // Sidebar info
+            document.getElementById('sidebar-user-name').textContent = user.name;
+            document.getElementById('sidebar-user-email').textContent = user.email;
 
             // Fill profile form
             if (user.phone) document.getElementById('profile-phone').value = user.phone;
@@ -65,35 +94,48 @@ async function loadUserOrders() {
         const data = await response.json();
 
         if (data.success && data.orders.length > 0) {
-            ordersList.innerHTML = data.orders.map(order => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <div class="order-info">
-                            <span>Order Placed: <strong>${new Date(order.createdAt).toLocaleDateString()}</strong></span>
-                            <span>Order ID: <strong>#${order._id.substring(18).toUpperCase()}</strong></span>
+            ordersList.innerHTML = data.orders.map((order, idx) => `
+                <div class="order-card-modern" style="animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.15}s forwards; opacity: 0;">
+                    <div class="order-header-modern">
+                        <div class="order-meta-info">
+                            <div class="meta-item">
+                                <span class="meta-label">Date</span>
+                                <span class="meta-value">${new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Order ID</span>
+                                <span class="meta-value">#${order._id.substring(18).toUpperCase()}</span>
+                            </div>
                         </div>
-                        <div class="order-status status-${order.status.toLowerCase()}">${order.status}</div>
+                        <div class="order-status-badge status-${order.status.toLowerCase()}">
+                            <i class="fas ${order.status === 'Delivered' ? 'fa-check-circle' : 'fa-clock'}"></i>
+                            ${order.status}
+                        </div>
                     </div>
-                    <div class="order-body">
+                    <div class="order-items-modern">
                         ${order.items.map(item => `
-                            <div class="order-item">
-                                <span class="item-name">${item.title}</span>
-                                <span class="item-qty-price">x${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}</span>
+                            <div class="order-item-row">
+                                <span class="item-name">${item.title}  <small style="color: #999; margin-left:8px;">× ${item.quantity}</small></span>
+                                <span class="item-price">₹${(item.price * item.quantity).toFixed(0)}</span>
                             </div>
                         `).join('')}
                     </div>
-                    <div class="order-footer">
-                        <span>Payment: <strong>${order.paymentMethod}</strong></span>
-                        <span class="order-total">Total: ₹${order.totalAmount.toFixed(2)}</span>
+                    <div class="order-footer-modern">
+                        <span class="payment-method"><i class="fas fa-credit-card" style="margin-right: 8px; opacity: 0.5;"></i> ${order.paymentMethod}</span>
+                        <div class="order-total-modern">
+                            <span style="font-size: 0.8rem; font-weight: 400; color: #999; margin-right: 10px;">Total</span>
+                            ₹${order.totalAmount.toFixed(0)}
+                        </div>
                     </div>
                 </div>
             `).join('');
         } else {
             ordersList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-box-open"></i>
-                    <p>You haven't placed any orders yet.</p>
-                    <a href="index.html#products" class="btn btn-primary">Browse Products</a>
+                <div class="empty-state" style="text-align: center; padding: 60px 20px;">
+                    <div style="font-size: 4rem; color: #f0f0f0; margin-bottom: 20px;"><i class="fas fa-box-open"></i></div>
+                    <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 10px;">No Orders Yet</h3>
+                    <p style="color: #999; margin-bottom: 30px;">Your wellness journey starts with your first order.</p>
+                    <a href="index.html#products" class="btn-premium">Explore Products</a>
                 </div>
             `;
         }
@@ -108,20 +150,24 @@ function loadCartPreview() {
     const cart = JSON.parse(localStorage.getItem('kriya_cart')) || [];
 
     if (cart.length > 0) {
-        cartContainer.innerHTML = cart.map(item => {
-            const imageStyle = item.image ? `background-image: url('${item.image}'); background-size: cover;` : item.imageStyle;
+        cartContainer.innerHTML = cart.map((item, idx) => {
+            const imageStyle = item.image ? `background-image: url('${item.image}')` : (item.imageStyle || '');
             return `
-                <div class="cart-item-mini">
-                    <div class="placeholder-img" style="${imageStyle}"></div>
-                    <div class="cart-item-mini-info">
+                <div class="cart-item-mini-modern" style="animation: slideUpFade 0.5s ease ${idx * 0.1}s forwards; opacity: 0;">
+                    <div class="cart-item-thumb" style="${imageStyle}"></div>
+                    <div class="cart-item-info-modern">
                         <h4>${item.title}</h4>
-                        <p>Qty: ${item.quantity} | ₹${(item.price * item.quantity).toFixed(2)}</p>
+                        <p>Qty: ${item.quantity} | ₹${(item.price * item.quantity).toFixed(0)}</p>
                     </div>
                 </div>
             `;
         }).join('');
     } else {
-        cartContainer.innerHTML = '<p class="empty-msg">Your cart is empty.</p>';
+        cartContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <p style="color: #999;">Your cart is empty.</p>
+            </div>
+        `;
     }
 }
 
@@ -130,11 +176,11 @@ const profileForm = document.getElementById('profile-form');
 if (profileForm) {
     profileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = profileForm.querySelector('.btn-save');
+        const btn = profileForm.querySelector('.btn-save-modern');
         const status = document.getElementById('profile-status');
 
         btn.disabled = true;
-        btn.innerHTML = 'Saving... <i class="fas fa-spinner fa-spin"></i>';
+        btn.innerHTML = 'Updating... <i class="fas fa-spinner fa-spin"></i>';
 
         const formData = {
             phone: document.getElementById('profile-phone').value,
@@ -158,18 +204,17 @@ if (profileForm) {
             const data = await response.json();
 
             if (data.success) {
-                status.innerHTML = '<p style="color: #2e8b57; margin-top: 10px;"><i class="fas fa-check-circle"></i> Address saved successfully!</p>';
-                // Update global currentUser in main.js if needed, but since we are on a new page, it will refresh next time
+                status.innerHTML = '<div style="background: #e6f7ef; color: #2e8b57; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; border: 1px solid #c3e6cb;"><i class="fas fa-check-circle"></i> Profile updated successfully!</div>';
             } else {
-                status.innerHTML = `<p style="color: #d9534f; margin-top: 10px;">${data.message}</p>`;
+                status.innerHTML = `<div style="background: #fff5f5; color: #ff4d4d; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; border: 1px solid #ffd1d1;">${data.message}</div>`;
             }
         } catch (error) {
             console.error('Update profile error:', error);
-            status.innerHTML = '<p style="color: #d9534f; margin-top: 10px;">Error saving address.</p>';
+            status.innerHTML = '<div style="background: #fff5f5; color: #ff4d4d; padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; border: 1px solid #ffd1d1;">Error saving address.</div>';
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<span>Save Address</span> <i class="fas fa-save"></i>';
-            setTimeout(() => status.innerHTML = '', 3000);
+            btn.innerHTML = '<span>Update Information</span> <div class="btn-icon"><i class="fas fa-save"></i></div>';
+            setTimeout(() => status.innerHTML = '', 4000);
         }
     });
 }
