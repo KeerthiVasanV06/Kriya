@@ -213,15 +213,11 @@ function addToCart(product) {
     // Visual Feedback
     const btn = document.querySelector(`button[data-id="${product.id}"]`);
     if (btn) {
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Added!';
-        btn.style.backgroundColor = '#2E8B57';
-        btn.style.color = 'white';
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.style.backgroundColor = '';
-            btn.style.color = '';
-        }, 1500);
+        btn.innerHTML = '<i class="fas fa-check"></i> Added';
+        btn.classList.add('added');
+
+        // Show "Added" briefly then keep it as "In Cart" or similar?
+        // Let's just keep it as "Added" with the checkmark as requested
     }
 }
 
@@ -349,20 +345,27 @@ function displayProducts(products) {
                 <p>${product.description}</p>
                 <span class="price">₹${product.price.toFixed(2)}</span>
                 <div class="product-actions">
-                    <button class="btn btn-secondary" data-id="${product._id}" onclick='addToCart(${JSON.stringify({
-            id: product._id,
-            title: product.title,
-            price: product.price,
-            image: product.image,
-            imageStyle: product.imageStyle
-        }).replace(/'/g, "&apos;")})'>Add to Cart</button>
+                    ${(() => {
+                const isInCart = cart.some(item => item.id === product._id);
+                return `
+                        <button class="btn btn-secondary ${isInCart ? 'added' : ''}" data-id="${product._id}" onclick='addToCart(${JSON.stringify({
+                    id: product._id,
+                    title: product.title,
+                    price: product.price,
+                    image: product.image,
+                    imageStyle: product.imageStyle
+                }).replace(/'/g, "&apos;")})'>
+                            ${isInCart ? '<i class="fas fa-check"></i> Added' : 'Add to Cart'}
+                        </button>
+                        `;
+            })()}
                     <button class="btn btn-primary buy-now-btn" onclick='buyNow(${JSON.stringify({
-            id: product._id,
-            title: product.title,
-            price: product.price,
-            image: product.image,
-            imageStyle: product.imageStyle
-        }).replace(/'/g, "&apos;")})'>Buy Now</button>
+                id: product._id,
+                title: product.title,
+                price: product.price,
+                image: product.image,
+                imageStyle: product.imageStyle
+            }).replace(/'/g, "&apos;")})'>Buy Now</button>
                 </div>
             </div>
         </div>

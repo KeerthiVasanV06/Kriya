@@ -735,9 +735,26 @@ img {
 
 .product-actions .btn {
     flex: 1;
-    padding: 0.8rem 0.5rem;
-    font-size: 0.85rem;
+    padding: 0.8rem 0.2rem;
+    /* Even less side padding for extreme cases */
+    font-size: 0.78rem;
+    /* Slightly smaller for guaranteed fit */
+    font-weight: 700;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    letter-spacing: -0.2px;
+    /* Tighten letter spacing slightly */
+    min-height: 48px;
+    border-radius: 12px;
+}
+
+.product-actions .btn-secondary.added {
+    background-color: var(--secondary-green);
+    border-color: var(--secondary-green);
+    color: white;
 }
 
 .buy-now-btn {
@@ -2347,4 +2364,18 @@ select#checkout-state:focus {
     outline: none;
     border-color: var(--primary-gold);
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+/* Ultra Mobile Responsive Fixes */
+@media (max-width: 380px) {
+    .product-actions {
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .product-actions .btn {
+        width: 100%;
+        padding: 0.9rem;
+        font-size: 0.9rem;
+    }
 }
